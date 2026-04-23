@@ -1,0 +1,46 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Variables de entorno
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.swp
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE / VS Code
+.vscode/
+
+# 🔐 Credenciales (CRÍTICO)
+credentials/*.json
+
+# ❌ NO ignoramos data porque quieres subir evidencia
+# data/raw/
+# data/bronze/
+# data/pdf/
+
+# Base de datos local (si usas)
+*.sqlite3
+
+# Build / distribución
+dist/
+build/
+*.egg-info/
