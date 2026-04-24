@@ -14,7 +14,7 @@ def get_model():
 
     if _model is None:
         vertexai.init(project=PROJECT_ID, location=LOCATION)
-        _model = GenerativeModel("gemini-1.5-flash")
+        _model = GenerativeModel("gemini-2.5-flash")
 
     return _model
 

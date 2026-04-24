@@ -10,7 +10,7 @@ LOCATION = os.getenv("GCP_LOCATION")
 
 genai.configure()  # usa credenciales automáticamente
 
-MODEL = "gemini-1.5-flash"
+MODEL = "gemini-2.5-flash"
 
 
 # =========================

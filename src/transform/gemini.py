@@ -14,7 +14,7 @@ LOCATION = os.getenv("GCP_LOCATION")
 
 vertexai.init(project=PROJECT_ID, location=LOCATION)
 
-model = GenerativeModel("gemini-1.5-flash")
+model = GenerativeModel("gemini-2.5-flash")
 
 
 # ======================
@@ -31,7 +31,6 @@ def read_pdf_from_gcs(gcs_uri):
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(blob_path)
 
-    # descargar temporal
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         blob.download_to_filename(tmp.name)
 
@@ -44,7 +43,7 @@ def read_pdf_from_gcs(gcs_uri):
         except Exception as e:
             print(f"⚠️ Error leyendo PDF: {e}")
 
-    return text[:15000]  # límite seguro para Gemini
+    return text[:15000]
 
 
 # ======================
@@ -55,7 +54,14 @@ def call_gemini(text):
     prompt = f"""
 Eres un asistente legal experto en fiscalía.
 
-Analiza el documento y devuelve SOLO un JSON válido con esta estructura:
+Analiza el documento y devuelve SOLO un JSON válido.
+
+IMPORTANTE:
+- No escribas texto adicional
+- No uses ```json
+- No expliques nada
+
+Formato EXACTO:
 
 {{
     "plazo_dias": number,
@@ -65,22 +71,37 @@ Analiza el documento y devuelve SOLO un JSON válido con esta estructura:
     "delito": string
 }}
 
-Reglas:
-- Si no encuentras un campo → null
-- No expliques nada
-- Solo devuelve JSON limpio
+Si no encuentras un campo usa null.
 
 DOCUMENTO:
 {text}
 """
 
-    response = model.generate_content(prompt)
+    response = model.generate_content(
+        prompt,
+        generation_config={
+            "temperature": 0,
+            "response_mime_type": "application/json"
+        }
+    )
+
+    raw_text = response.text.strip()
+
+    # 🔍 DEBUG (te ayuda a ver qué devuelve realmente)
+    print("🔎 Respuesta Gemini:", raw_text[:200])
 
     try:
-        return json.loads(response.text)
+        return json.loads(raw_text)
     except Exception:
         print("⚠️ Gemini devolvió texto no JSON")
-        return {}
+
+        # 🔥 intento de rescate automático (muy útil)
+        try:
+            start = raw_text.find("{")
+            end = raw_text.rfind("}") + 1
+            return json.loads(raw_text[start:end])
+        except Exception:
+            return {}
 
 
 # ======================
